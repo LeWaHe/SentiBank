@@ -1,8 +1,2 @@
 ,model,features,score,precision,recall,f1,time_taken_mns,run_date
-0,SVC,['n_avis' 'sentiment_norm' 'longueur_texte'],0.32,0.29,0.32,0.26,0.09,2024-02-02
-0,SVC,['n_avis' 'sentiment_norm' 'longueur_texte'],0.32,0.29,0.32,0.26,0.08,2024-02-02
-0,SVC,['n_avis' 'sentiment_norm' 'longueur_texte'],0.32,0.29,0.32,0.26,0.08,2024-02-02
-0,SVC,['n_avis' 'sentiment_norm' 'longueur_texte'],0.32,0.29,0.32,0.26,0.08,2024-02-02
-0,RandomForestClassifier,['n_avis' 'sentiment_norm' 'longueur_texte'],0.23,0.25,0.23,0.15,0.0,2024-02-02
-0,RandomForestClassifier,['n_avis' 'sentiment_norm' 'longueur_texte'],0.23,0.25,0.23,0.15,0.0,2024-02-02
-0,RandomForestClassifier,['n_avis' 'sentiment_norm' 'longueur_texte'],0.23,0.26,0.23,0.2,0.0,2024-02-02
+0,GridSearchCV,['n_avis' 'sentiment_norm' 'longueur_texte'],0.36,0.36,0.36,0.35,326.87,2024-02-02
