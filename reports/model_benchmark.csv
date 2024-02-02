@@ -1,2 +1,1 @@
-,model,features,score,precision,recall,f1,time_taken_mns,run_date
-0,GridSearchCV,['n_avis' 'sentiment_norm' 'longueur_texte'],0.36,0.36,0.36,0.35,326.87,2024-02-02
+,model,bool_grid,features,score,precision,recall,f1,time_taken_mns,run_date
