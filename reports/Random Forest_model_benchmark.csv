@@ -1,2 +1,0 @@
-,model,grid search,used/best params,features,score,precision,recall,f1,time_taken_mns,run_date
-0,"RF- n_avis, sent, text length",no,baseline hyperparameters,['n_avis' 'sentiment_norm' 'longueur_texte'],0.35,0.35,0.35,0.33,0.0,2024-02-06

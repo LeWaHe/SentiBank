@@ -66,9 +66,9 @@ def model_report():
     plt.show()
 
     # load and append results to the benchmark, save
-    bench = pd.read_csv('../reports/model_benchmark.csv', index_col=0)
+    bench = pd.read_csv('../reports/benchmark/model_benchmark.csv', index_col=0)
     bench = pd.concat([bench, tempdf])
-    bench.to_csv('../reports/model_benchmark.csv')
+    bench.to_csv('../reports/benchmark/model_benchmark.csv')
 
 def review_vector(df,raw_extra_features):
     from sklearn.feature_extraction.text import TfidfVectorizer

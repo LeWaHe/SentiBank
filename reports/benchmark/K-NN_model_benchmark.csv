@@ -1,0 +1,5 @@
+,model,grid search,used/best params,score,precision,recall,f1,time_taken_mns,run_date
+0,"K-NN- n_avis, sentiment, text length, companies",no,baseline hyperparameters,0.51,0.5,0.51,0.5,0.0,2024-02-07
+0,"K-NN- GRID n_avis, sentiment, text length, companies",yes,"{'algorithm': 'ball_tree', 'leaf_size': 10, 'n_neighbors': 7, 'weights': 'uniform'}",0.51,0.51,0.51,0.51,1.74,2024-02-07
+0,"K-NN - GRID n_avis, sentiment, text length, companies",no,baseline hyperparameters,0.45,0.45,0.45,0.44,0.0,2024-02-07
+0,"K-NN- GRID text TFIDF, n_avis, sentiment, text length, companies",yes,"{'algorithm': 'brute', 'leaf_size': 10, 'n_neighbors': 7, 'weights': 'distance'}",0.46,0.46,0.46,0.46,6.89,2024-02-07

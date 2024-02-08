@@ -1,0 +1,5 @@
+,model,grid search,used/best params,score,precision,recall,f1,time_taken_mns,run_date
+0,"RF- n_avis, sent, text length, companies",no,baseline hyperparameters,0.53,0.52,0.53,0.52,0.0,2024-02-07
+0,"RF- GRID n_avis, sent, text length, companies",yes,"{'max_depth': None, 'min_samples_leaf': 2, 'min_samples_split': 20, 'n_estimators': 100}",0.55,0.55,0.55,0.55,9.41,2024-02-07
+0,"RF- TFIDF, n_avis, sent, text length, companies",no,baseline hyperparameters,0.42,0.41,0.42,0.38,0.0,2024-02-07
+0,"RF- GRID TFIDF, n_avis, sent, text length, companies",yes,"{'max_depth': None, 'min_samples_leaf': 2, 'min_samples_split': 5, 'n_estimators': 200}",0.47,0.47,0.47,0.47,11.39,2024-02-07
