@@ -1,0 +1,2 @@
+,model,grid search,used/best params,features,score,precision,recall,f1,time_taken_mns,run_date
+0,Camembert classification- review text,no,baseline parameters,text_total (review + title),0.63,0.63,0.63,0.63,264.85,2024-02-08
