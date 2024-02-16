@@ -1,0 +1,2 @@
+,label,test,word mode,best train accuracy score,threshold used
+0,c_good_efficacy,review_sentence_vs_reference_sentence,stop,0.68,0.82

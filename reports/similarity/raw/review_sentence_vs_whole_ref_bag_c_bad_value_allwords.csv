@@ -1,0 +1,2 @@
+,label,test,word mode,best train accuracy score,threshold used
+0,c_bad_value,review_sentence_vs_whole_ref_bag,allwords,0.59,0.83
