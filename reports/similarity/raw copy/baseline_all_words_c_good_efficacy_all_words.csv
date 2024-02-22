@@ -1,0 +1,2 @@
+,label,test,word mode,best train f1 score,threshold used
+0,c_good_efficacy,baseline_all_words,all_words,0.46,0.84

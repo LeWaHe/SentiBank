@@ -1,0 +1,7 @@
+,label,Accuracy,best_threshold,Method,Word mode
+0,c_bad_value,0.72,0.66,train_review_sentence_vs_whole_ref_bag,stop
+1,c_bad_efficacy,0.78,0.84,train_review_sentence_vs_whole_ref_bag,allwords
+2,c_bad_comm,0.71,0.83,train_review_sentence_vs_whole_ref_bag,allwords
+3,c_good_value,0.73,0.8,train_review_sentence_vs_whole_ref_bag,stop
+4,c_good_efficacy,0.67,0.82,train_review_sentence_vs_reference_sentence,allwords
+5,c_good_comm,0.69,0.82,train_review_sentence_vs_reference_sentence,allwords

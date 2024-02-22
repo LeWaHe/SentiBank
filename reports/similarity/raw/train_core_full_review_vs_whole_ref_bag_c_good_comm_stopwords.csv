@@ -1,0 +1,2 @@
+,label,test,word_mode,f1,precision,recall,threshold_used,train_valid_test
+0,c_good_comm,core_full_review_vs_whole_ref_bag,stopwords,0.64,0.63,0.64,0.73,train

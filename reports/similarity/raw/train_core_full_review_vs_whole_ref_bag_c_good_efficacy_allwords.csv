@@ -1,0 +1,2 @@
+,label,test,word_mode,f1,precision,recall,threshold_used,train_valid_test
+0,c_good_efficacy,core_full_review_vs_whole_ref_bag,allwords,0.49,0.52,0.51,0.89,train

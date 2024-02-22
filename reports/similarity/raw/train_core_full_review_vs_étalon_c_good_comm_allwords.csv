@@ -1,0 +1,2 @@
+,label,test,word_mode,f1,precision,recall,threshold_used,train_valid_test
+0,c_good_comm,core_full_review_vs_étalon,allwords,0.44,0.86,0.51,0.59,train
