@@ -1,0 +1,2 @@
+,label,test,word_mode,f1,precision,recall,threshold_used,train_valid_test
+0,c_bad_comm,core_review_sentence_vs_ref_étalon,stopwords,0.43,0.35,0.5,0.6,validation
