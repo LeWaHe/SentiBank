@@ -1,0 +1,2 @@
+,label,test,word_mode,sentiment,f1,precision,recall,used/optimal_threshold,grid,train_valid_test
+0,c_good_com,review_vs_whole_ref_bag,stopwords,sentiment,0.46,0.86,0.52,0.85,not grid,train
