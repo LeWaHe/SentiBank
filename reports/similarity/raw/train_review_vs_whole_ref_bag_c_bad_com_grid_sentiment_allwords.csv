@@ -1,2 +1,2 @@
-,label,test,word_mode,sentiment,f1,precision,recall,used/optimal_threshold,grid,train_valid_test
-0,c_bad_com,review_vs_whole_ref_bag,allwords,sentiment,0.77,0.76,0.84,0.68,grid,train
+,label,test,word_mode,sentiment,f1,precision,recall,used/optimal_threshold,grid,train_valid_test,time
+0,c_bad_com,review_vs_whole_ref_bag,allwords,sentiment,0.78,0.77,0.82,0.72,grid,train,2024-02-29 13:00

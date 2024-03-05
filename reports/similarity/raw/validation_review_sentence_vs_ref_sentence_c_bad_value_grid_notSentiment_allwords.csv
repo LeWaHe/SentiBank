@@ -1,0 +1,2 @@
+,label,test,word_mode,sentiment,f1,precision,recall,used/optimal_threshold,grid,train_valid_test,time
+0,c_bad_value,review_sentence_vs_ref_sentence,allwords,notSentiment,0.5,0.53,0.56,0.81,grid,validation,2024-02-29 01:21

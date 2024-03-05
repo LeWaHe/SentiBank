@@ -1,0 +1,3 @@
+,label,test,word_mode,sentiment,f1,precision,recall,used/optimal_threshold,grid,train_valid_test,time
+0,c_bad_com,review_vs_whole_ref_bag,allwords,notSentiment,0.43,0.38,0.5,"[0.68 0.69 0.7  0.71 0.72 0.73 0.74 0.75 0.76 0.77 0.78 0.79 0.8  0.81
+ 0.82 0.83 0.84 0.85 0.86 0.87 0.88 0.89 0.9  0.91 0.92 0.93 0.94 0.95]",not grid,train,2024-02-29 12:17
