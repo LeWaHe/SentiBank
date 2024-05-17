@@ -4,35 +4,108 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 # cache?
-df = pd.read_csv('/Users/lheyerda/Documents/streamlit/train.csv')
 
 st.title("Projet de classification ")
 st.sidebar.title("Sommaire")
-pages=["Introduction","Exploration", "DataVizualization", "Modélisation", "Prédiction"]
+pages=["Introduction", "Exploration/DataVizualization", "Modélisation I","Modélisation II", "Prédiction"]
 page=st.sidebar.radio("Aller vers", pages)
 
 if page == pages [0]:
     st.write("## Introduction")
+    st.write("""Extraire des informations ainsi que les sentiments contenus dans des commentaires du secteurs financier ou bancaire sur le site trustpilot.com.
 
-    st.write(df.shape)
-
+Objectifs spécifiques :
+""")
+    st.write("•	Prédire la satisfaction d’un client : problème de régression (prédire le nombre d'étoiles). Entraînement supervisé possible.")
+    st.write(" •	Identifier les points clés des avis : localisation, nom d’entreprise... ")
+    st.write("•	Extraire les propos du commentaire et trouver les mots importants (problème de livraison, article défectueux...) : approche non supervisée avec CamemBert.")
+    st.write("•	Trouver une réponse rapide adaptée pour répondre au commentaire (par exemple sur les reviews Google).")
 
 if page == pages[1]:
-    st.write("### Exploration")
+    st.write("### Exploration/DataVizualization")
+    st.write("""Nous avons collecté 165 000 avis sur les banques du site trust pilot en utilisant BeautifulSoup. Nous avons retiré du dataset les avis liés à l’une des banques qui semblait émaner de bots (60000 avis, la grande majorité de 5 étoiles). Nous avons fait le split des données train et test avant de faire une sélection équilibrée des étoiles (pour éviter un leaking de la structure des résultats attendus en test dans l’entrainement) en se basant sur un tirage aléatoire égal au nombre de messages présents dans la classe la plus minoritaire. Le dataset retenu faisait 15 000 avis, dont 30% du jeu destiné au jeu de test.
+    Nous avons fait un benchmark pour évaluer la performance de différents modèles : SVM, Random Forests, XGBOOST, KNN, SVC, Logistic Regression et CAMEMBERT.
+    """)
 
-    st.dataframe(df.head(10))
-    st.dataframe(df.describe())
-    if st.checkbox("Afficher les NA"):
-        st.dataframe(df.isna().sum())
 
 if page == pages[2]:
-    st.write("### DataVizualization")
+    st.write("### Modélisation")
+    model_benchmark = pd.read_csv('/Users/lheyerda/Library/CloudStorage/OneDrive-InstitutPasteurParis/github/juil23_cds_supply_chain/reports/classification_benchmark_2024-02-08.csv', index_col= 0)
+    st.write("""
+             Pour la prédiction des étoiles des avis, ,Le modèle de deep learning Camembert a donné les meilleurs résultats. 
+             Sur les données d’entrainement il a atteint une précision, un recall et un f1 de 0.63 chacun. 
 
+             Le deuxième modèle le plus performant a été Random Forest avec un f1 de 0.55. 
+             Ce score a été obtenu sur les features numériques uniquement et par une grille qui a retenu les paramètres suivants
+              : 'max_depth': None, 'min_samples_leaf': 2, 'min_samples_split': 20, 'n_estimators': 100.
+              
+             Le troisième modèle le plus performant suit de près le deuxième, il s’agit de XGBOOST avec un score de 0.54 obtenu sur les features numériques et les hyperparamètres par défaut,
+              la recherche par grille a donné le même score f1.""")
+    
+    st.dataframe(model_benchmark)
 
 if page == pages[3]:
-    st.write("### Modélisation")
+    st.write("### Modélisation II classification des sentiments (Communication, Efficacité, Valeur économique)")
+    
+    st.write("""Nous avons fait une classification des sentiments des utilisateurs concernant la communication, l’efficacité et la valeur ajoutée par similarité sémantique.
+    Par la suite nous avons entrepris de caractériser les arguments que les usagers invoquent pour expliquer leur notation, afin de dégager les aspects positifs et négatifs des services, qui pourraient être utiles pour augmenter leur qualité et la satisfaction des clients.
+    """)
+   
+    tableau_labels = st.dataframe(pd.read_excel("/Users/lheyerda/Library/CloudStorage/OneDrive-InstitutPasteurParis/github/juil23_cds_supply_chain/soutenance/tableau_labels.xlsx"))
+    
+    st.write("""Nous avons fait une classification des sentiments des utilisateurs concernant la communication, l’efficacité et la valeur ajoutée par similarité sémantique.
+    Par la suite nous avons entrepris de caractériser les arguments que les usagers invoquent pour expliquer leur notation, afin de dégager les aspects positifs et négatifs des services, qui pourraient être utiles pour augmenter leur qualité et la satisfaction des clients.
+    """)
+    baseline_banchmark_sem= pd.read_csv('/Users/lheyerda/Library/CloudStorage/OneDrive-InstitutPasteurParis/github/juil23_cds_supply_chain/soutenance/baseline_semantic_bench.csv')
+
+    import matplotlib.pyplot as plt
+
+    plt_1 = plt.figure(figsize=(10,6))
+    plt.plot(baseline_banchmark_sem.threshold,baseline_banchmark_sem.Stop_words, label ="stop words", color ="indianred")
+    plt.plot(baseline_banchmark_sem.threshold,baseline_banchmark_sem.Stop_words_sents, label ="stop words + sentiment", color ="indianred",linestyle="--")
+    plt.plot(baseline_banchmark_sem.threshold, baseline_banchmark_sem.All_words, label = "all words", color="seagreen")
+    plt.plot(baseline_banchmark_sem.threshold, baseline_banchmark_sem.All_words_sents, label ="all words + sentiment", linestyle="--", color="seagreen")
+    plt.grid(True, which='both', linestyle=':', linewidth=0.5)
+    plt.xlabel("similarity threshold used")
+    plt.ylabel("f1 score")
+    plt.legend()
+    plt.show();
+    st.pyplot(plt_1)
 
 
+    def heat(train_test):
+        # pivot table heatmap
+        benchmark = pd.read_csv(f"/Users/lheyerda/Library/CloudStorage/OneDrive-InstitutPasteurParis/github/juil23_cds_supply_chain/soutenance/benchmark_sem_{train_test}.csv")
+        pivot = benchmark.pivot_table(index='code_mode', columns='test', values='f1')
+        fig_sem_bench = plt.figure(figsize=(7, 10))  
+        heatmap = sns.heatmap(pivot, annot=True, fmt=".2f", cmap="YlGnBu", linewidths=0, linecolor='grey')
+
+        # horizontal lines 
+        for i in range(0, len(pivot.index), 4):
+            plt.axhline(i, color='white', linestyle=':', linewidth=2)
+
+        # Label the color bar
+        color_bar = heatmap.collections[0].colorbar
+        color_bar.set_label('f1')
+
+        plt.title(f'Heatmap of best {train_test} F1 Scores')
+        heatmap.xaxis.tick_top() 
+        plt.xticks(rotation=45, ha='left')
+        return fig_sem_bench 
+    st.write("#### Résultats benchmark sur données d'entrainement")
+    
+    fig_sem_bench_train = heat("train")
+    st.pyplot(fig_sem_bench_train)
+
+    st.write("#### Résultats benchmark sur données de validation")
+    fig_sem_bench_val = heat("validation")
+    st.pyplot(fig_sem_bench_val)
+
+    st.write("#### évaluation des résultats avec les données test")
+    fig_sem_bench_test = pd.read_csv("/Users/lheyerda/Library/CloudStorage/OneDrive-InstitutPasteurParis/github/juil23_cds_supply_chain/soutenance/benchmark_sem_test.csv", index_col=0)
+    st.dataframe(fig_sem_bench_test)
+
+    #plt.show()
 
 
 if page == pages[4]:
@@ -48,7 +121,6 @@ if page == pages[4]:
 
     import numpy as np
     import warnings
-  
 
     def allocate_lab(sim_score, y_pred, thresh):
         #print("thresh", thresh, "sim_score", sim_score)
