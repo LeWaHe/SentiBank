@@ -11,9 +11,11 @@ import spacy
 import time
 import warnings
 
-liste=pd.read_csv("../data/liste_entreprises_banque.csv")
-df = pd.read_csv("../data/avis/general_df.csv")
-df_cleaned = pd.read_csv("../data/avis/df_cleaned.csv")
+liste=pd.read_csv("../data/liste_entreprises_banque.csv", index_col=0)
+df = pd.read_csv("../data/avis/general_df.csv", index_col=0)
+df=df.iloc[:,1:]
+df_cleaned = pd.read_csv("../data/avis/df_cleaned.csv", index_col=0)
+tab=pd.read_csv("../data/avis/describe_avis.csv")
 
 st.title("Projet d'analse des avis et verbatim")
 st.sidebar.title("Sommaire")
@@ -34,7 +36,7 @@ if page == pages[0] :
     st.dataframe(liste.head())
     st.dataframe(df.head())
     st.write(df.shape)
-    st.dataframe(df.describe())
+    st.dataframe(tab.head(10))
 
     if st.checkbox("Afficher les NA") :
         st.dataframe(df.isna().sum())
