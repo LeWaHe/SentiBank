@@ -9,13 +9,19 @@ import spacy
 #pip install time
 #pip install warnings
 import time
-import warnings
+import warnings 
+import platform
 
-liste=pd.read_csv("../data/liste_entreprises_banque.csv", index_col=0)
-df = pd.read_csv("../data/avis/general_df.csv", index_col=0)
+if platform.system() == "Darwin":  # macOS
+    key_path = "/Users/lheyerda/Documents/GitHub/juil23_cds_supply_chain"
+else:
+    key_path = ".." 
+
+liste=pd.read_excel(f"{key_path}/data/liste_entreprises_banque.xlsx", index_col=0)
+df = pd.read_csv(f"{key_path}/data/avis/general_df.csv", index_col=0)
 df=df.iloc[:,1:]
-df_cleaned = pd.read_csv("../data/avis/df_cleaned.csv", index_col=0)
-tab=pd.read_csv("../data/avis/describe_avis.csv")
+df_cleaned = pd.read_csv(f"{key_path}/data/avis/df_cleaned.csv", index_col=0)
+tab=pd.read_csv(f"{key_path}/data/avis/describe_avis.csv")
 
 st.title("Projet d'analse des avis et verbatim")
 st.sidebar.title("Sommaire")
@@ -91,7 +97,7 @@ if page == pages[3] :
     benchmark = pd.DataFrame()
 
     for file in bench_list:
-        df = pd.read_csv(f'../reports/benchmark/{file}', index_col=0)
+        df = pd.read_csv(f'{key_path}/reports/benchmark/{file}', index_col=0)
         benchmark = pd.concat([benchmark, df])
 
     new_cols = ['model', 'grid search', 'score', 'precision', 'recall', 'f1', 'time_taken_mns', 'run_date', 'used/best params']
@@ -112,7 +118,7 @@ if page == pages[3] :
     st.write("###   Résultat des différents traitements")
     st.write("Nous avons choisi de classer les messages en utilisant la similarité sémantique avec Spacy et le modèle fr_core_news_lg. Nous avions plusieurs options pour établir la norme sémantique pour chaque étiquette, en utilisant des mots-clés, la définition de nos étiquettes, ou des exemples tirés de l'ensemble des avis étiquetés. Notre exploration a déterminé que les mots-clés et les définitions donnaient de mauvais résultats, nous avons donc opté pour des exemples réels. Dans notre référence, nous avons testé quelle granularité de document donnait les meilleurs résultats : phrase de l'avis, avis complet, phrase de référence, référence complète. Nous avons également testé si le filtrage par stop words et par sentiment donnait de meilleurs résultats. Enfin, nous avons recherché le seuil de similarité maximisant la précision. Une exploration pour une étiquette, utilisant toutes les références et avis complets, indique que l'utilisation de filtres de sentiment et l'absence de filtrage des stop words améliorent la précision.")
 
-    bench= pd.read_csv("../reports/similarity/best_validation_params.csv", index_col=0)
+    bench= pd.read_csv(f"{key_path}/reports/similarity/best_validation_params.csv", index_col=0)
     st.dataframe(bench.head(7))    
 
     st.write("Bien que l'utilisation des mots vides et le filtrage par sentiment aient été les moins efficaces lors de la phase d'entraînement, ils sont devenus des atouts précieux lors des phases de validation et de test face à des données inédites. Nos tests finaux montrent des résultats contrastés : d'un côté, bad_com a maintenu un score F1 élevé (0.8), suivi de bad_efficacy (0.7). Good_com et good_efficacy ont tous deux des scores moyens de 0.6, tandis que good_value et bad_value ont des scores plutôt bas (0.54). Ces scores sont tous nettement meilleurs que le hasard (0.2), mais idéalement, ils devraient être plus élevés.")
@@ -129,8 +135,8 @@ if page == pages[4]:
     st.write("En utilisant la proximité sémantique et des références issues d'une labelisation à la main, nous pouvons prédire les sentiment des avis concernant la Communication, la Valeur ajoutée et l'Efficacité du service bancaire.")
 
 
-    df = pd.read_csv("../data/df_sim_small.csv")
-    references = pd.read_csv('../data/references_bag.csv')
+    df = pd.read_csv(f"{key_path}/data/df_sim_small.csv")
+    references = pd.read_csv(f"{key_path}/data/references_bag.csv")
 
     nlp = spacy.load("fr_core_news_lg")
 
@@ -289,7 +295,7 @@ if page == pages[4]:
 
     from math import pi
 
-    df_banks = pd.read_csv("../data/tabs_banques.csv")
+    df_banks = pd.read_csv(f"{key_path}data/tabs_banques.csv")
     n = len(df_banks)
 
     def pyramid(df, one_all, bank="all banks",ax=None):
