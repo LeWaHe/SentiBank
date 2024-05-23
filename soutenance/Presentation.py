@@ -9,20 +9,61 @@ import spacy
 #pip install time
 #pip install warnings
 import time
-import warnings
+import warnings 
+import platform
 
-liste=pd.read_csv("../data/liste_entreprises_banque.csv", index_col=0)
-df = pd.read_csv("../data/avis/general_df.csv", index_col=0)
-df=df.iloc[:,1:]
-df_cleaned = pd.read_csv("../data/avis/df_cleaned.csv", index_col=0)
-tab=pd.read_csv("../data/avis/tab_describe.csv")
+if platform.system() == "Darwin":  # macOS
+    key_path = "/Users/lheyerda/Documents/GitHub/juil23_cds_supply_chain"
+else:
+    key_path = ".." 
+
+# cache
+
+@st.cache_data
+def load_df():
+    df = pd.read_csv(f"{key_path}/data/avis/general_df.csv", index_col=0)
+    return df
+
+@st.cache_data
+def load_clean_df():
+    df_cleaned = pd.read_csv(f"{key_path}/data/avis/df_cleaned.csv", index_col=0)
+    return df_cleaned
+
+@st.cache_data
+def load_nlp():
+    nlp = spacy.load("fr_core_news_lg")
+    return nlp
+
+@st.cache_data
+def load_entreprises():
+    ent = pd.read_csv(f"{key_path}/data/liste_entreprises_banque.csv", index_col=0)
+    return ent
+
+entreprises = load_entreprises()
+df = load_df()
+#df=df.iloc[:,1:]
+
+df_cleaned = load_clean_df()
+#tab=pd.read_csv(f"{key_path}/soutenance/describe_avis.csv")
+
+nlp = load_nlp()
 
 st.title("Projet d'analse des avis et verbatim")
 st.sidebar.title("Sommaire")
+
+
+
 pages=["I.	Introduction et objectif du projet", "II.	Préparations des données ", "III.	Analyses descriptives des données", "IV.	Modélisations I", "V.	Modélisations II","VI.	Prédiction"]
 page=st.sidebar.radio("Aller vers", pages)
+st.sidebar.write("### équipe:")
+st.sidebar.write("[Léonard Heyerdahl](https://www.linkedin.com/in/leonardo-heyerdahl/)")
+st.sidebar.write("Alexis Garatti")
+st.sidebar.write("Huazhen Hou")
+st.sidebar.write("Alexandre PRZYBYLSKI")
 
 
+
+# PAGE 1 
 if page == pages[0] : 
     st.write("### Introduction et objectif")
     st.write("Faire des modélisations à partir des avis et verbatim à partir du site 'fr.trustpilot.com/categories/bank' afin d'analyser les verbatim et le lien entre les notations et les verbatim")
@@ -31,12 +72,14 @@ if page == pages[0] :
     st.write("- Extraire les propos du commentaire et trouver les mots importants : problème de livraison, article défectueux... avec l'approche non supervisée avec CamemBert")
     st.write("- Trouver une réponse rapide adaptée pour répondre au commentaire, par exemple sur les reviews Google")
 
-    st.write("### Aperçu de la base de données téléchargée")
 
-    st.dataframe(liste.head())
-    st.dataframe(df.head())
-    st.write(df.shape)
-    
+    st.write('### Aperçu des banques listées sur Trust Pilot (scrap)')
+    st.write(entreprises)
+
+    st.write("### Aperçu de la base de données des avis scrappés")
+    st.write(f"Nombre d'avis scrappés: **{len(df)}**")
+    st.dataframe(df)
+    #st.dataframe(df.etoiles.describe())
 
     if st.checkbox("Afficher les NA") :
         st.dataframe(df.isna().sum())
@@ -45,25 +88,29 @@ if page == pages[0] :
 
 if page == pages[1] : 
     st.write("### Préparations des données")
-    st.write("Nous avons retiré du dataset les avis liés à l'une des banques qui semblait émaner de bots. Cette société a environs 60 000 avis avec la grande majorité de 5 étoiles.") 
-
-    st.write("### Aperçu de la base de données nettoyées")
+    st.write("""
+- **Retrait des avis liés à une banque suspectée d'utiliser des bots**:
+  - Environ 60 000 avis, majorité de 5 étoiles.
+- **Nettoyage des données**:
+  - Retrait des na et des entrées de type incohérent (str là ou données numériques attendues)
+  - Conversion des dates au format datetime
+- **Renforcement du dataframe**:
+  - Ajout d'une colone contenant la longueur de l'avis en charactères
+  - Ajout d'une colone du score de sentiment (probabilité x label postif (1) ou négatif (-1)) inféré par CAMEMBERT
+  - Concaténation du *titre de l'avis* et de *l'avis*, pour regrouper les données textuelles existantes
+""")
+    st.write("### Aperçu de la base de données nettoyée")
 
     st.dataframe(df_cleaned.head())
-    st.dataframe(tab.head(10))
-
-    st.write("Nous avons fait le **split** des données train et test avant de faire une sélection équilibrée des étoiles (pour éviter un leaking de la structure des résultats attendus en test dans l'entrainement) en se basant sur un tirage aléatoire égal au nombre de messages présents dans la classe la plus minoritaire. Le dataset retenu faisait 15 000 avis, dont 30% du jeu destiné au jeu de test. Nous avons fait un benchmark pour évaluer la performance de différents modèles : SVM, Random Forests, XGBOOST, KNN, SVC, Logistic Regression et CAMEMBERT.")
-    st.write("Pour chaque modèle, nous avons testé les features numériques uniquement d'une part : le nombre d'avis, le sentiment (score inféré par CAMEMEMBERT) et la longueur de l'avis, et d'autre part les features numériques et le texte de l'avis (concaténation du titre et de l'avis). ")
-    st.write("Pour chaque modèle (excepté CAMEMBERT) nous avons lancé un entrainement avec les hyper paramètres par défaut puis lancé une grille de recherche des meilleurs paramètres.")
 
 
 if page == pages[2] :
     st.write("###    Analyses descriptives des données")
     
     fig = plt.figure()
-    top_20_banques = df_cleaned["Société"].value_counts().head(20).index
-    filtered_df = df_cleaned[df_cleaned['Société'].isin(top_20_banques)]
-    sns.countplot(y='Société', data=filtered_df, order=top_20_banques)
+    top_20_banques = df_cleaned["page"].value_counts().head(20).index
+    filtered_df = df_cleaned[df_cleaned['page'].isin(top_20_banques)]
+    sns.countplot(y='page', data=filtered_df, order=top_20_banques)
     plt.title("Top 20 des banques par nombre d'avis")  
     st.pyplot(fig)
 
@@ -73,28 +120,48 @@ if page == pages[2] :
     plt.title("Distribution du nombre d'avis donnés par utilisateur (1 à 10 avis)")
     st.pyplot(fig) 
 
-    fig = plt.figure()
-    sns.countplot(y='localisation', data=df_cleaned, order=df_cleaned['localisation'].value_counts().iloc[:10].index)  # top 10 localisations
-    plt.title('Top 10 des localisations des utilisateurs')
-    st.pyplot(fig) 
+    #fig = plt.figure()
+    #sns.countplot(y='localisation',
+                #data=df_cleaned,
+                #order=df_cleaned['localisation'].value_counts().iloc[:10].index)  # top 10 localisations
+    #plt.title('Top 10 des localisations des utilisateurs')
+    #st.pyplot(fig) 
+    
 
     fig = plt.figure()
-    df_cleaned['length_avis'] =  df_cleaned['text_total'].apply(lambda word: len(word) if pd.notnull(word) else 1)
-    st.write("###   Analyse par longeur des avis")
-    st.dataframe(df_cleaned.length_avis.describe())
- 
+    df_cleaned['length_avis'] = df_cleaned['text_total'].apply(len)
+    sns.boxplot(x='etoiles', y='length_avis', data=df_cleaned)
+    plt.title('Longueur des avis par notes')
+    st.pyplot(fig)
 
 if page == pages[3] :
-    st.write("###   Modélisation I")
-    st.write("Pour chaque modèle, nous avons testé les features numériques uniquement d'une part : le nombre d'avis, le sentiment (score inféré par CAMEMEMBERT) et la longueur de l'avis, et d'autre part les features numériques et le texte de l'avis (concaténation du titre et de l'avis).")
-    st.write("Le modèle de deep learning Camembert a donné les meilleurs résultats. Sur les données d'entrainement il a atteint une précision, un recall et un f1 de 0.63 chacun. Le deuxième modèle le plus performant a été Random Forest avec un f1 de 0.55. Ce score a été obtenu sur les features numériques uniquement et par une grille qui a retenu les paramètres suivants : 'max_depth': None, 'min_samples_leaf': 2, 'min_samples_split': 20, 'n_estimators': 100. Le troisième modèle le plus performant suit de près le deuxième, il s’agit de XGBOOST avec un score de 0.54 obtenu sur les features numériques et les hyperparamètres par défaut, la recherche par grille a donné le même score f1.")
-    bench_list = listdir("../reports/benchmark")
+    st.write("###   Modélisation")
+    st.write ("""
+              - **Split des données en train et test avant la sélection équilibrée des étoiles**:
+  - Basé sur un tirage aléatoire égal au nombre de messages dans la classe la plus minoritaire.
+- **Dataset final** : 15 000 avis.
+  - 30% destinés au jeu de test.
+- **Benchmark pour évaluer différents modèles** :
+  - SVM
+  - Random Forests
+  - XGBOOST
+  - KNN
+  - SVC
+  - Logistic Regression
+  - CAMEMBERT
+- **Tests pour chaque modèle** :
+  - Features numériques uniquement : nombre d'avis, sentiment (score inféré par CAMEMBERT), longueur de l'avis.
+  - Features numériques et texte de l'avis (concaténation du titre et de l'avis).
+- **Entraînement avec hyperparamètres par défaut pour chaque modèle, suivi d'une grille de recherche des meilleurs paramètres (sauf CAMEMBERT)**.
+""")
+    st.write("Le modèle de deep learning d'architecture Transformer Camembert a donné les meilleurs résultats. Sur les données de test il a atteint une précision, un recall et un f1 de 0.63 chacun. Le deuxième modèle le plus performant a été Random Forest avec un f1 de 0.55. Ce score a été obtenu sur les features numériques uniquement et par une grille qui a retenu les paramètres suivants : 'max_depth': None, 'min_samples_leaf': 2, 'min_samples_split': 20, 'n_estimators': 100. Le troisième modèle le plus performant suit de près le deuxième, il s’agit de XGBOOST avec un score de 0.54 obtenu sur les features numériques et les hyperparamètres par défaut, la recherche par grille a donné le même score f1.")
+    bench_list = listdir(f"{key_path}/reports/benchmark")
     # bench_list.remove(".DS_Store")
 
     benchmark = pd.DataFrame()
 
     for file in bench_list:
-        df = pd.read_csv(f'../reports/benchmark/{file}', index_col=0)
+        df = pd.read_csv(f'{key_path}/reports/benchmark/{file}', index_col=0)
         benchmark = pd.concat([benchmark, df])
 
     new_cols = ['model', 'grid search', 'score', 'precision', 'recall', 'f1', 'time_taken_mns', 'run_date', 'used/best params']
@@ -105,29 +172,61 @@ if page == pages[3] :
 
     st.write("###   Interprétation des résultats")
     st.write("Le score f1 de 0.63 sur 5 classes est trois fois plus performant qu'une classification au hasard. Sans surprise c'est le modèle de deep learning basé sur l'architecture Transformers qui atteint le meilleur score. Dans l'absolu cependant ce score n'est pas optimal, idéalement notre score aurait dû se situer au-dessus de 0.75. Cependant la prédiction d'étoile est par nature très délicate, d’une part parce qu’il s'agit d'interpréter des données non structurées (du texte) et d'autre part car l'appréciation des étoiles peut varier d'une personne à l'autre. Par exemple certains usagers peuvent estimer, selon l'adage scolaire, qu'un score parfait (20/20 ou 5 étoiles sur 5) n'existe pas, et vont donc donner 4 étoiles alors que d'autres utilisateurs pour une satisfaction similaire en mettraient 5. De même la différence dans le « ventre mou », entre 2 et 3 ; 3 et 4 étoiles peut être sujette à des variations interpersonnelles importantes. Dans l'ensemble et malgré un score non optimal, nous sommes satisfaits de la performance du modèle Camembert. Nous devons aussi noter ici que les modèles de machine learning utilisés ont également bénéficié de la puissance de Camembert puisqu'ils utilisaient un score de sentiment inféré par ce modèle, mais même dans ces cas-là l'inférence de Camembert sur le texte a donné de meilleurs résultats.")
+    st.write("###   Labelisation")
+    st.write("Nous avons fait une classification des sentiments des utilisateurs concernant la communication, l'efficacité et la valeur ajoutée par similarité sémantique. Par la suite nous avons entrepris de caractériser les arguments que les usagers invoquent pour expliquer leur notation, afin de dégager les aspects positifs et négatifs des services, qui pourraient être utiles pour augmenter leur qualité et la satisfaction des clients.")
+    labelisation = pd.read_excel(f"{key_path}/soutenance/tableau_labels.xlsx", header=0, index_col=0)
+    st.dataframe(labelisation.head(7))
+    st.write("Nous avons étiqueté manuellement 283 avis que nous avons ensuite divisés en ensembles de données d'entraînement (152 avis), de validation (66 avis) et de test (65 avis).")
+    st.write("Afin de faciliter l'étiquetage automatisé des avis, nous avons renforcé notre jeu de données en inférant le sentiment (en utilisant Camembert) et en créant de nouvelles colonnes contenant respectivement des phrases positives et négatives pour chaque avis. Nous avons également créé des colonnes avec le texte privé de mots vides.")
     
+    st.write("###   Résultat des différents traitements")
+    st.write("Nous avons choisi de classer les messages en utilisant la similarité sémantique avec Spacy et le modèle fr_core_news_lg. Nous avions plusieurs options pour établir la norme sémantique pour chaque étiquette, en utilisant des mots-clés, la définition de nos étiquettes, ou des exemples tirés de l'ensemble des avis étiquetés. Notre exploration a déterminé que les mots-clés et les définitions donnaient de mauvais résultats, nous avons donc opté pour des exemples réels. Dans notre référence, nous avons testé quelle granularité de document donnait les meilleurs résultats : phrase de l'avis, avis complet, phrase de référence, référence complète. Nous avons également testé si le filtrage par stop words et par sentiment donnait de meilleurs résultats. Enfin, nous avons recherché le seuil de similarité maximisant la précision. Une exploration pour une étiquette, utilisant toutes les références et avis complets, indique que l'utilisation de filtres de sentiment et l'absence de filtrage des stop words améliorent la précision.")
 
-    st.write("###   Focus Random Forest")
-    st.image('../data/crosstab_rf.png', caption='')
-    st.write("""Le modèle semble bien performer pour les classes extrêmes (1 et 5 étoiles), mais il a du mal avec les classes intermédiaires.
-La matrice de confusion normalisée affichée ci-dessus indique les performances du modèle Random Forest sur l'ensemble de test. Les valeurs de la matrice sont normalisées par le nombre d'observations réelles pour chaque classe, ce qui nous permet de voir la proportion des prédictions correctes par rapport au total des cas pour chaque classe réelle.
-""")
-    st.write("Un modèle parfait aurait 1.0 sur toute la diagonale et 0.0 partout ailleurs. Ici, nous pouvons observer que le modèle prédit relativement bien les avis à 5 étoiles mais performe moins bien pour les autres classes, en particulier les avis à 2, 3 et 4 étoiles, qui sont souvent confondus avec les avis à 5 étoiles.")
+    bench= pd.read_csv(f"{key_path}/reports/similarity/best_validation_params.csv", index_col=0)
+    st.dataframe(bench.head(7))    
+
+    st.write("Bien que l'utilisation des mots vides et le filtrage par sentiment aient été les moins efficaces lors de la phase d'entraînement, ils sont devenus des atouts précieux lors des phases de validation et de test face à des données inédites. Nos tests finaux montrent des résultats contrastés : d'un côté, bad_com a maintenu un score F1 élevé (0.8), suivi de bad_efficacy (0.7). Good_com et good_efficacy ont tous deux des scores moyens de 0.6, tandis que good_value et bad_value ont des scores plutôt bas (0.54). Ces scores sont tous nettement meilleurs que le hasard (0.2), mais idéalement, ils devraient être plus élevés.")
+    st.write("Le fait que good_value et bad_value aient obtenu de faibles scores peut être interprété par le manque de cohérence des espaces sémantiques auxquels ils se rapportent. Lorsque nous avons décidé de notre système d'étiquetage, nous avons regroupé plusieurs sujets tels que les frais, les taux d'intérêt, les prêts sous les étiquettes good_value et bad_value. Avec le recul, garder des étiquettes séparées pour ces différents sujets aurait pu donner des scores de précision individuellement plus élevés.")
+
+    st.write("###   Classification sur l'ensemble des avis")
+    st.write("Nous avons ajouté des colonnes pour créer des extraits de l'avis filtrés par sentiment et avec les mots vides supprimés.")
+    st.write("Nous avons effectué l'étiquetage sur l'ensemble du jeu de données et nous avons veillé à retirer l'étiquetage des avis où deux étiquettes opposées existaient, pour ne tenir compte que des opinions clairement tranchées. Sur la page suivante, vous trouverez la représentation des entreprises bancaires ayant plus de mille avis.")
+    st.write("Les pyramides représentent les ratios pour la communication, l'efficacité et la valeur. Le score central est l'addition des 3 ratios, plus il est proche de 3, plus l'expérience utilisateur est parfaite ; plus il est proche de 0, plus l'expérience utilisateur est terrible.") 
+    st.write("Nous pouvons observer que les pires scores sont obtenus par les acteurs historiques du système bancaire français : Société Générale (0.68), La Banque Postale (0.32), LCL (0.81), Crédit Mutuel (0.86), BNP Paribas (0.64), et dans une moindre mesure par quelques nouveaux venus : Oney (1.26) et Hello Bank (1.29). En revanche, les banques plus récentes ou les banques en ligne ont tendance à obtenir des scores beaucoup plus élevés : Orange Bank (2.30), Boursorama Banque (2.15), Monabank (2.23), Ma French Bank (2.32), Floabank (2.05) etc. Les scores les plus élevés ont été obtenus par des entreprises offrant des services bancaires spécialisés pour les professionnels (Shine (2.69) et Anytime (2.47)), des cartes de crédit pour adolescents (Kard (2.73) et Pix Pay (2.81)), ou axées sur les prêts à la consommation (Immoprêt (2.78) et Cofidis (2.80)). Si nous devions poursuivre ce travail, nous créerions des catégories plus granulaires, y compris pour la valeur (prêts, frais, taux d'intérêt), nous utiliserions des modèles de langage plus performants (peut-être Camembert) pour inférer l'étiquetage par similarité sémantique, ou, alternativement, nous inférerions les étiquettes en utilisant des prompts de few-shot avec un modèle de langage ouvert et de grande taille, comme Mixtral 8x22b, ce qui nécessiterait encore une évaluation en utilisant des données étiquetées à la main comme nous l'avons fait.")
 
 if page == pages[4] :
 
     st.write("### Modélisation II classification des sentiments (Communication, Efficacité, Valeur économique)")
-    st.write("""Nous avons fait une classification des sentiments des utilisateurs concernant la communication, l’efficacité et la valeur ajoutée par similarité sémantique.
-    Par la suite nous avons entrepris de caractériser les arguments que les usagers invoquent pour expliquer leur notation, afin de dégager les aspects positifs et négatifs des services, qui pourraient être utiles pour augmenter leur qualité et la satisfaction des clients.
-    """)
+    st.write("""
+- **Classification des sentiments des utilisateurs concernant** :
+  - Communication
+  - Efficacité
+  - Valeur ajoutée
+  - **Méthode** : Similarité sémantique.
+- **Caractérisation des arguments des usagers pour expliquer leur notation** :
+  - Identification des aspects positifs et négatifs des services.
+  - Objectif : Augmenter la qualité des services et la satisfaction des clients.
+""")
    
-    tableau_labels = st.dataframe(pd.read_excel("../data/tableau_labels.xlsx"))
+    tableau_labels = st.dataframe(pd.read_excel(f"{key_path}/soutenance/tableau_labels.xlsx"))
     
-    st.write("""Nous avons fait une classification des sentiments des utilisateurs concernant la communication, l’efficacité et la valeur ajoutée par similarité sémantique.
-    Par la suite nous avons entrepris de caractériser les arguments que les usagers invoquent pour expliquer leur notation, afin de dégager les aspects positifs et négatifs des services, qui pourraient être utiles pour augmenter leur qualité et la satisfaction des clients.
-    """)
-    baseline_banchmark_sem= pd.read_csv("../data/baseline_semantic_bench.csv")
-    fig_sem_bench_test = pd.read_csv("../data/benchmark_sem_test.csv", index_col=0)
+    st.write("""
+- **Notre benchmark évaluera plusieurs stratégies** :
+  - **Granularité des éléments comparés** :
+    - Phrases de l'avis contre phrase des exemples de référence
+    - Phrases de l'avis vs liste entière des exemples
+    - Avis complet vs liste entière des exemples
+  - **Utilisation de l'avis** :
+    - Sans filtre de mots vides
+    - Avec un filtre de mots vides
+    - Avec un filtre sur les phrases positives/négatives
+    - Sans filtre de sentiment
+- **Seuil optimal de similarité**:
+    - Tester un seuil de similarité entre 0.65 et .99
+""")
+    st.write("Un premier test sur les données d'entrainement montre de meilleures performances en utilisant l'avis sans filtre de mots vides et avec un filtre de sentiment")
+    baseline_banchmark_sem= pd.read_csv(f"{key_path}/soutenance/baseline_semantic_bench.csv")
+    fig_sem_bench_test = pd.read_csv(f"{key_path}/soutenance/benchmark_sem_test.csv", index_col=0)
 
 
     plt_1 = plt.figure(figsize=(12,10))
@@ -142,10 +241,10 @@ if page == pages[4] :
 
     st.pyplot(plt_1)
 
-
+    
     def heat(train_test):
         # pivot table heatmap
-        benchmark = pd.read_csv(f"../data/benchmark_sem_{train_test}.csv")
+        benchmark = pd.read_csv(f"{key_path}/soutenance/benchmark_sem_{train_test}.csv")
         pivot = benchmark.pivot_table(index='code_mode', columns='test', values='f1')
         fig_sem_bench = plt.figure(figsize=(12, 16))  
         heatmap = sns.heatmap(pivot, annot=True, fmt=".2f", cmap="YlGnBu", linewidths=0, linecolor='grey')
@@ -164,8 +263,8 @@ if page == pages[4] :
         return fig_sem_bench 
     
     st.write("#### Résultats benchmark sur données d'entrainement")
-
-    st.image('../data/heatmap_train.png', caption='')
+    st.write("nous avons testé l'ensemble des stratégies pour les 6 labels sur les données d'entrainement:")
+    st.image(f"{key_path}/soutenance/heatmap_train.png", caption='') 
 
     #fig_sem_bench_train = heat("train")
     #st.pyplot(fig_sem_bench_train)
@@ -173,14 +272,35 @@ if page == pages[4] :
     st.write("#### Résultats benchmark sur données de validation")
     #fig_sem_bench_val = heat("validation")
     #st.pyplot(fig_sem_bench_val)
-    st.image('../data/heatmap_validation.png', caption='')
+    st.write("Puis nous avons testé nos stratégies sur des données de validation, qui incluent des messages inédits")
+    st.image(f"{key_path}/soutenance/heatmap_validation.png", caption='')
+
+    val_best_params = pd.read_csv(f"{key_path}/soutenance/best_params_validation.csv")
+    st.write('Pour la validation, la meilleure combinaison était:')
+    st.dataframe(val_best_params)
 
     st.write("#### Evaluation des résultats avec les données test")
-
+    st.write('Nous avons repris les meilleurs paramètres puis testé leur efficacité sur un dernier jeu de test:')
     st.dataframe(fig_sem_bench_test)
 
-    st.write("""Bien que l'utilisation des mots vides et le filtrage par sentiment aient été les moins efficaces lors de la phase d'entraînement, ils sont devenus des atouts précieux lors des phases de validation et de test face à des données inédites. Nos tests finaux montrent des résultats contrastés : d'un côté, bad_com a maintenu un score F1 élevé (0.8), suivi de bad_efficacy (0.7). Good_com et good_efficacy ont tous deux des scores moyens de 0.6, tandis que good_value et bad_value ont des scores plutôt bas (0.54). Ces scores sont tous nettement meilleurs que le hasard (0.2), mais idéalement, ils devraient être plus élevés.
-Le fait que good_value et bad_value aient obtenu de faibles scores peut être interprété par le manque de cohérence des espaces sémantiques auxquels ils se rapportent. Lorsque nous avons décidé de notre système d'étiquetage, nous avons regroupé plusieurs sujets tels que les frais, les taux d'intérêt, les prêts sous les étiquettes good_value et bad_value. Avec le recul, garder des étiquettes séparées pour ces différents sujets aurait pu donner des scores de précision individuellement plus élevés.
+    st.write("""
+- **Bien que l'utilisation des mots vides et le filtrage par sentiment aient été les moins efficaces lors de la phase d'entraînement** :
+  - Devenus des atouts précieux lors des phases de validation et de test face à des données inédites.
+- **Nos tests finaux montrent des résultats contrastés** :
+  - **Scores F1 élevés** :
+    - bad_com : 0.8
+    - bad_efficacy : 0.7
+  - **Scores moyens** :
+    - good_com : 0.6
+    - good_efficacy : 0.6
+  - **Scores bas** :
+    - good_value : 0.54
+    - bad_value : 0.54
+  - Tous ces scores sont nettement meilleurs que le hasard (0.2), mais devraient idéalement être plus élevés.
+- **Interprétation des faibles scores de good_value et bad_value** :
+  - Manque de cohérence des espaces sémantiques auxquels ils se rapportent.
+  - Regroupement de sujets variés (frais, taux d'intérêt, prêts) sous les étiquettes good_value et bad_value.
+  - **Suggestion rétrospective** : Garder des étiquettes séparées pour ces différents sujets aurait pu donner des scores de précision individuellement plus élevés.
 """)
 
 if page == pages[5]:
@@ -189,10 +309,9 @@ if page == pages[5]:
     st.write("En utilisant la proximité sémantique et des références issues d'une labelisation à la main, nous pouvons prédire les sentiment des avis concernant la Communication, la Valeur ajoutée et l'Efficacité du service bancaire.")
 
 
-    df = pd.read_csv("../data/df_sim_small.csv")
-    references = pd.read_csv('../data/references_bag.csv')
+    df = pd.read_csv(f"{key_path}/soutenance/df_sim_small.csv")
+    references = pd.read_csv(f"{key_path}/soutenance/references_bag.csv")
 
-    nlp = spacy.load("fr_core_news_lg")
 
     def allocate_lab(sim_score, y_pred, thresh):
         #print("thresh", thresh, "sim_score", sim_score)
@@ -331,7 +450,10 @@ if page == pages[5]:
                 b_efficacy =""# "😐 a une efficacité mitigée"
         
         if sim['c_bad_com'][0] + sim['c_good_com'][0] + sim['c_bad_value'][0] + sim['c_good_value'][0] + sim['c_bad_efficacy'][0] + sim['c_good_efficacy'][0]:
-            st.write(f"l'avis considère que la banque {df.Société[i]} a {b_com} {b_value} {b_efficacy}")
+            st.write(f"l'avis considère que la banque {df.Société[i]} a:")
+            st.write(b_com)
+            st.write(b_value)
+            st.write(b_efficacy)
         else:
             st.write("pas de sentiment particulier détécté")
         b_com,b_value,b_efficacy = "","",""
@@ -349,7 +471,7 @@ if page == pages[5]:
 
     from math import pi
 
-    df_banks = pd.read_csv("../data/tabs_banques.csv")
+    df_banks = pd.read_csv(f"{key_path}/soutenance/tabs_banques.csv")
     n = len(df_banks)
 
     def pyramid(df, one_all, bank="all banks",ax=None):
@@ -460,7 +582,7 @@ if page == pages[5]:
         st.pyplot(fig)
 
     st.write("""Cette labélisation permet de tester les facteurs économiques. Nous poursuivons notre analyse de sentiment associée aux avis émis et essayons d’associer ces sentiments à des notions financières telles que compte", "solde", "crédit", "débit", "prêt", "hypothèque", "intérêt", "investissement", "épargne", "transaction", "dépôt", "retrait", "frais", "charge", "budget", "finance", "argent", "monnaie", "échange", "taux", "action", "obligation", "marché", "économique", "économie", "financier", "fiscal", "inflation", "déflation", "taxe", "revenu", "profit", "perte", "évaluation", "actif", "passif", "équité", "dividende", "portefeuille". Nous observons ainsi une polarisation des opinions négatives non pas sur les services habituels liés aux échanges (informations) ou des prêts (les avis sont positifs en net lorsque nous faisons la différence entre avis positifs et négatifs), mais sur la notion de "perte" ou de compte ce qui suggèrerait qu’un facteur conjoncturel serait à l’œuvre.""")
-    st.image('../references/Net sentiment.jpg', caption='')  
+    st.image(f"{key_path}/references/Net sentiment.jpg", caption='')  
     st.write("Pour vérifier cela, nous détaillons la fréquence des opinions exprimées en fonction des mois durant lesquels ces dernières sont exprimées. Nous constatons une hausse brutale de ces opinions à la fin de notre échantillon aux alentours de Octobre 2023. Les entreprises françaises ont effectivement commencé à rencontrer de plus grandes difficultés vers la fin de l'année 2023.")
-    st.image('../references/timeserie.png', caption='')   
+    st.image(f"{key_path}/references/timeserie.png", caption='')    
     st.write("Les défaillances d'entreprises ont augmenté significativement, reflétant une situation économique tendue marquée par l'inflation, la hausse des taux d'intérêt et le ralentissement économique. Ces facteurs ont combiné leurs effets avec le début du remboursement des dettes accumulées pendant la crise du Covid-19, comme les Prêts Garantis par l'État (PGE), exacerbant les difficultés pour de nombreuses entreprises. Ces données montrent clairement que la fin de l'année 2023 a marqué un tournant pour les entreprises françaises, avec une augmentation significative des faillites et des procédures collectives, signalant des défis accrus en matière de liquidité et de solvabilité pour les entreprises de toutes tailles, et notamment pour les plus petites d’entre elles ou les auto-entrepreneurs. ")

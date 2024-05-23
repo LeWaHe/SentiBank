@@ -1,0 +1,7 @@
+,label,train_valid_test,Accuracy,best_threshold,Method,Word mode,Sentiment,Grid
+0,c_good_efficacy,test,0.6,0.71,review_sentence_vs_ref_sentence,stopwords,sentiment,not grid
+1,c_bad_com,test,0.8,0.73,review_sentence_vs_ref_sentence,stopwords,sentiment,not grid
+2,c_bad_value,test,0.54,0.69,review_sentence_vs_whole_ref_bag,stopwords,sentiment,not grid
+3,c_bad_efficacy,test,0.71,0.86,review_vs_whole_ref_bag,allwords,notSentiment,not grid
+4,c_good_com,test,0.6,0.68,review_sentence_vs_ref_sentence,stopwords,sentiment,not grid
+5,c_good_value,test,0.57,0.68,review_sentence_vs_whole_ref_bag,stopwords,sentiment,not grid
