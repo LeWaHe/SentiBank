@@ -288,13 +288,13 @@ if page == pages[4] :
   - Devenus des atouts précieux lors des phases de validation et de test face à des données inédites.
 - **Nos tests finaux montrent des résultats contrastés** :
   - **Scores F1 élevés** :
-    - bad_com : 0.8
-    - bad_efficacy : 0.7
+    - bad_com : 0.80
+    - bad_efficacy : 0.71
   - **Scores moyens** :
-    - good_com : 0.6
-    - good_efficacy : 0.6
+    - good_com : 0.60
+    - good_efficacy : 0.60
   - **Scores bas** :
-    - good_value : 0.54
+    - good_value : 0.57
     - bad_value : 0.54
   - Tous ces scores sont nettement meilleurs que le hasard (0.2), mais devraient idéalement être plus élevés.
 - **Interprétation des faibles scores de good_value et bad_value** :
@@ -453,12 +453,12 @@ if page == pages[5]:
             st.write(f"l'avis considère que la banque {df.Société[i]} a:")
             st.write(b_com)
             st.write(b_value)
-            st.write(b_efficacy})
+            st.write(b_efficacy)
         else:
             st.write("pas de sentiment particulier détécté")
         b_com,b_value,b_efficacy = "","",""
    
-    st.write("#### 1) Prédiction par avis")
+    st.write("#### 1) Prédiction par avis (échantillon de 200 avis choisis au hasard)")
     i = st.slider(
         "## Choisir un avis:",
         1, 199, 1)
@@ -581,7 +581,55 @@ if page == pages[5]:
         plt.show()
         st.pyplot(fig)
 
-    st.write("""Cette labélisation permet de tester les facteurs économiques. Nous poursuivons notre analyse de sentiment associée aux avis émis et essayons d’associer ces sentiments à des notions financières telles que compte", "solde", "crédit", "débit", "prêt", "hypothèque", "intérêt", "investissement", "épargne", "transaction", "dépôt", "retrait", "frais", "charge", "budget", "finance", "argent", "monnaie", "échange", "taux", "action", "obligation", "marché", "économique", "économie", "financier", "fiscal", "inflation", "déflation", "taxe", "revenu", "profit", "perte", "évaluation", "actif", "passif", "équité", "dividende", "portefeuille". Nous observons ainsi une polarisation des opinions négatives non pas sur les services habituels liés aux échanges (informations) ou des prêts (les avis sont positifs en net lorsque nous faisons la différence entre avis positifs et négatifs), mais sur la notion de "perte" ou de compte ce qui suggèrerait qu’un facteur conjoncturel serait à l’œuvre.""")
+    st.write("""
+- **Cette labélisation permet de tester les facteurs économiques** :
+  - Analyse de sentiment associée aux avis émis.
+  - Association de ces sentiments à des notions financières telles que :
+    - Compte
+    - Solde
+    - Crédit
+    - Débit
+    - Prêt
+    - Hypothèque
+    - Intérêt
+    - Investissement
+    - Épargne
+    - Transaction
+    - Dépôt
+    - Retrait
+    - Frais
+    - Charge
+    - Budget
+    - Finance
+    - Argent
+    - Monnaie
+    - Échange
+    - Taux
+    - Action
+    - Obligation
+    - Marché
+    - Économique
+    - Économie
+    - Financier
+    - Fiscal
+    - Inflation
+    - Déflation
+    - Taxe
+    - Revenu
+    - Profit
+    - Perte
+    - Évaluation
+    - Actif
+    - Passif
+    - Équité
+    - Dividende
+    - Portefeuille
+- **Observations** :
+  - Polarisation des opinions négatives non pas sur les services habituels liés aux échanges ou des prêts.
+  - Avis positifs en net pour les échanges d'informations et les prêts.
+  - Opinions négatives concentrées sur la notion de "perte" ou de compte.
+  - Suggère qu’un facteur conjoncturel serait à l’œuvre.
+""")    
     st.image(f"{key_path}/references/Net sentiment.jpg", caption='')  
     st.write("Pour vérifier cela, nous détaillons la fréquence des opinions exprimées en fonction des mois durant lesquels ces dernières sont exprimées. Nous constatons une hausse brutale de ces opinions à la fin de notre échantillon aux alentours de Octobre 2023. Les entreprises françaises ont effectivement commencé à rencontrer de plus grandes difficultés vers la fin de l'année 2023.")
     st.image(f"{key_path}/references/timeserie.png", caption='')    

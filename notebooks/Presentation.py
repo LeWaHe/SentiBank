@@ -453,7 +453,7 @@ if page == pages[5]:
             st.write(f"l'avis considère que la banque {df.Société[i]} a:")
             st.write(b_com)
             st.write(b_value)
-            st.write(b_efficacy})
+            st.write(b_efficacy)
         else:
             st.write("pas de sentiment particulier détécté")
         b_com,b_value,b_efficacy = "","",""
