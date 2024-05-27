@@ -155,21 +155,13 @@ if page == pages[3] :
 - **Entraînement avec hyperparamètres par défaut pour chaque modèle, suivi d'une grille de recherche des meilleurs paramètres (sauf CAMEMBERT)**.
 """)
     st.write("Le modèle de deep learning d'architecture Transformer Camembert a donné les meilleurs résultats. Sur les données de test il a atteint une précision, un recall et un f1 de 0.63 chacun. Le deuxième modèle le plus performant a été Random Forest avec un f1 de 0.55. Ce score a été obtenu sur les features numériques uniquement et par une grille qui a retenu les paramètres suivants : 'max_depth': None, 'min_samples_leaf': 2, 'min_samples_split': 20, 'n_estimators': 100. Le troisième modèle le plus performant suit de près le deuxième, il s’agit de XGBOOST avec un score de 0.54 obtenu sur les features numériques et les hyperparamètres par défaut, la recherche par grille a donné le même score f1.")
-    bench_list = listdir(f"{key_path}/reports/benchmark")
-    # bench_list.remove(".DS_Store")
+    st.dataframe(pd.read_csv(f"{key_path}/soutenance/benchmark_modelisationI.csv", index_col=0).iloc[0:3,:])
+    all_models = st.checkbox("visualiser tout le benchmark")
+    if all_models:
+        st.dataframe(pd.read_csv(f"{key_path}/soutenance/benchmark_modelisationI.csv", index_col=0))
 
-    benchmark = pd.DataFrame()
 
-    for file in bench_list:
-        df = pd.read_csv(f'{key_path}/reports/benchmark/{file}', index_col=0)
-        benchmark = pd.concat([benchmark, df])
-
-    new_cols = ['model', 'grid search', 'score', 'precision', 'recall', 'f1', 'time_taken_mns', 'run_date', 'used/best params']
-    benchmark = benchmark.reindex(columns=new_cols)
-    benchmark = benchmark.sort_values("f1", ascending = False)
-    benchmark= benchmark[benchmark.score!='na']
-    benchmark
-
+    
     st.write("###   Interprétation des résultats")
     st.write("Le score f1 de 0.63 sur 5 classes est trois fois plus performant qu'une classification au hasard. Sans surprise c'est le modèle de deep learning basé sur l'architecture Transformers qui atteint le meilleur score. Dans l'absolu cependant ce score n'est pas optimal, idéalement notre score aurait dû se situer au-dessus de 0.75. Cependant la prédiction d'étoile est par nature très délicate, d’une part parce qu’il s'agit d'interpréter des données non structurées (du texte) et d'autre part car l'appréciation des étoiles peut varier d'une personne à l'autre. Par exemple certains usagers peuvent estimer, selon l'adage scolaire, qu'un score parfait (20/20 ou 5 étoiles sur 5) n'existe pas, et vont donc donner 4 étoiles alors que d'autres utilisateurs pour une satisfaction similaire en mettraient 5. De même la différence dans le « ventre mou », entre 2 et 3 ; 3 et 4 étoiles peut être sujette à des variations interpersonnelles importantes. Dans l'ensemble et malgré un score non optimal, nous sommes satisfaits de la performance du modèle Camembert. Nous devons aussi noter ici que les modèles de machine learning utilisés ont également bénéficié de la puissance de Camembert puisqu'ils utilisaient un score de sentiment inféré par ce modèle, mais même dans ces cas-là l'inférence de Camembert sur le texte a donné de meilleurs résultats.")
     st.write("###   Labelisation")
@@ -583,7 +575,7 @@ if page == pages[5]:
 
     st.write("""
 - **Cette labélisation permet de tester les facteurs économiques** :
-  - Analyse de sentiment associée aux avis émis.
+  - Analyse de sentiment associée aux avis émis sur la **valeur économique**.
   - Association de ces sentiments à des notions financières telles que :
     - Compte
     - Solde
@@ -634,3 +626,11 @@ if page == pages[5]:
     st.write("Pour vérifier cela, nous détaillons la fréquence des opinions exprimées en fonction des mois durant lesquels ces dernières sont exprimées. Nous constatons une hausse brutale de ces opinions à la fin de notre échantillon aux alentours de Octobre 2023. Les entreprises françaises ont effectivement commencé à rencontrer de plus grandes difficultés vers la fin de l'année 2023.")
     st.image(f"{key_path}/references/timeserie.png", caption='')    
     st.write("Les défaillances d'entreprises ont augmenté significativement, reflétant une situation économique tendue marquée par l'inflation, la hausse des taux d'intérêt et le ralentissement économique. Ces facteurs ont combiné leurs effets avec le début du remboursement des dettes accumulées pendant la crise du Covid-19, comme les Prêts Garantis par l'État (PGE), exacerbant les difficultés pour de nombreuses entreprises. Ces données montrent clairement que la fin de l'année 2023 a marqué un tournant pour les entreprises françaises, avec une augmentation significative des faillites et des procédures collectives, signalant des défis accrus en matière de liquidité et de solvabilité pour les entreprises de toutes tailles, et notamment pour les plus petites d’entre elles ou les auto-entrepreneurs. ")
+
+    st.write("### Perspectives")
+    st.write("""des travaux futurs pourraient:
+  - Utiliser une labelisation plus étendue, notamment sur les aspects economiques
+  - Utiliser des modèles de generative AI pour:
+    - Labéliser les messages
+    - Produire des résumés des principaux pain points              
+             """)
