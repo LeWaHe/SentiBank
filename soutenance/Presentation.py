@@ -164,27 +164,17 @@ if page == pages[3] :
     
     st.write("###   Interprétation des résultats")
     st.write("Le score f1 de 0.63 sur 5 classes est trois fois plus performant qu'une classification au hasard. Sans surprise c'est le modèle de deep learning basé sur l'architecture Transformers qui atteint le meilleur score. Dans l'absolu cependant ce score n'est pas optimal, idéalement notre score aurait dû se situer au-dessus de 0.75. Cependant la prédiction d'étoile est par nature très délicate, d’une part parce qu’il s'agit d'interpréter des données non structurées (du texte) et d'autre part car l'appréciation des étoiles peut varier d'une personne à l'autre. Par exemple certains usagers peuvent estimer, selon l'adage scolaire, qu'un score parfait (20/20 ou 5 étoiles sur 5) n'existe pas, et vont donc donner 4 étoiles alors que d'autres utilisateurs pour une satisfaction similaire en mettraient 5. De même la différence dans le « ventre mou », entre 2 et 3 ; 3 et 4 étoiles peut être sujette à des variations interpersonnelles importantes. Dans l'ensemble et malgré un score non optimal, nous sommes satisfaits de la performance du modèle Camembert. Nous devons aussi noter ici que les modèles de machine learning utilisés ont également bénéficié de la puissance de Camembert puisqu'ils utilisaient un score de sentiment inféré par ce modèle, mais même dans ces cas-là l'inférence de Camembert sur le texte a donné de meilleurs résultats.")
-    st.write("###   Labelisation")
-    st.write("Nous avons fait une classification des sentiments des utilisateurs concernant la communication, l'efficacité et la valeur ajoutée par similarité sémantique. Par la suite nous avons entrepris de caractériser les arguments que les usagers invoquent pour expliquer leur notation, afin de dégager les aspects positifs et négatifs des services, qui pourraient être utiles pour augmenter leur qualité et la satisfaction des clients.")
-    labelisation = pd.read_excel(f"{key_path}/soutenance/tableau_labels.xlsx", header=0, index_col=0)
-    st.dataframe(labelisation.head(7))
-    st.write("Nous avons étiqueté manuellement 283 avis que nous avons ensuite divisés en ensembles de données d'entraînement (152 avis), de validation (66 avis) et de test (65 avis).")
-    st.write("Afin de faciliter l'étiquetage automatisé des avis, nous avons renforcé notre jeu de données en inférant le sentiment (en utilisant Camembert) et en créant de nouvelles colonnes contenant respectivement des phrases positives et négatives pour chaque avis. Nous avons également créé des colonnes avec le texte privé de mots vides.")
+    st.write("### Focus sur le résultat Random Forest")
+    st.write("""
+Nous utilisons aussi la technique TF-IDF pour vectoriser le texte des avis (limité à 1000 caractéristiques pour simplifier) et préparer les données pour un modèle de forêt aléatoire. Il divise les données en ensembles d'entraînement et de test, entraîne le modèle sur l'ensemble d'entraînement, puis prédit les résultats sur l'ensemble de test. Nous obtenons les résultats suivants :
+""")
+    st.image(f"{key_path}/soutenance/crosstab_RF.png")
+    st.write("""Le modèle semble bien performer pour les classes extrêmes (1 et 5 étoiles), mais il a du mal avec les classes intermédiaires.
+    La matrice de confusion normalisée affichée ci-dessus indique les performances du modèle Random Forest sur l'ensemble de test. Les valeurs de la matrice sont normalisées par le nombre d'observations réelles pour chaque classe, ce qui nous permet de voir la proportion des prédictions correctes par rapport au total des cas pour chaque classe réelle.
+
+             """)
     
-    st.write("###   Résultat des différents traitements")
-    st.write("Nous avons choisi de classer les messages en utilisant la similarité sémantique avec Spacy et le modèle fr_core_news_lg. Nous avions plusieurs options pour établir la norme sémantique pour chaque étiquette, en utilisant des mots-clés, la définition de nos étiquettes, ou des exemples tirés de l'ensemble des avis étiquetés. Notre exploration a déterminé que les mots-clés et les définitions donnaient de mauvais résultats, nous avons donc opté pour des exemples réels. Dans notre référence, nous avons testé quelle granularité de document donnait les meilleurs résultats : phrase de l'avis, avis complet, phrase de référence, référence complète. Nous avons également testé si le filtrage par stop words et par sentiment donnait de meilleurs résultats. Enfin, nous avons recherché le seuil de similarité maximisant la précision. Une exploration pour une étiquette, utilisant toutes les références et avis complets, indique que l'utilisation de filtres de sentiment et l'absence de filtrage des stop words améliorent la précision.")
 
-    bench= pd.read_csv(f"{key_path}/reports/similarity/best_validation_params.csv", index_col=0)
-    st.dataframe(bench.head(7))    
-
-    st.write("Bien que l'utilisation des mots vides et le filtrage par sentiment aient été les moins efficaces lors de la phase d'entraînement, ils sont devenus des atouts précieux lors des phases de validation et de test face à des données inédites. Nos tests finaux montrent des résultats contrastés : d'un côté, bad_com a maintenu un score F1 élevé (0.8), suivi de bad_efficacy (0.7). Good_com et good_efficacy ont tous deux des scores moyens de 0.6, tandis que good_value et bad_value ont des scores plutôt bas (0.54). Ces scores sont tous nettement meilleurs que le hasard (0.2), mais idéalement, ils devraient être plus élevés.")
-    st.write("Le fait que good_value et bad_value aient obtenu de faibles scores peut être interprété par le manque de cohérence des espaces sémantiques auxquels ils se rapportent. Lorsque nous avons décidé de notre système d'étiquetage, nous avons regroupé plusieurs sujets tels que les frais, les taux d'intérêt, les prêts sous les étiquettes good_value et bad_value. Avec le recul, garder des étiquettes séparées pour ces différents sujets aurait pu donner des scores de précision individuellement plus élevés.")
-
-    st.write("###   Classification sur l'ensemble des avis")
-    st.write("Nous avons ajouté des colonnes pour créer des extraits de l'avis filtrés par sentiment et avec les mots vides supprimés.")
-    st.write("Nous avons effectué l'étiquetage sur l'ensemble du jeu de données et nous avons veillé à retirer l'étiquetage des avis où deux étiquettes opposées existaient, pour ne tenir compte que des opinions clairement tranchées. Sur la page suivante, vous trouverez la représentation des entreprises bancaires ayant plus de mille avis.")
-    st.write("Les pyramides représentent les ratios pour la communication, l'efficacité et la valeur. Le score central est l'addition des 3 ratios, plus il est proche de 3, plus l'expérience utilisateur est parfaite ; plus il est proche de 0, plus l'expérience utilisateur est terrible.") 
-    st.write("Nous pouvons observer que les pires scores sont obtenus par les acteurs historiques du système bancaire français : Société Générale (0.68), La Banque Postale (0.32), LCL (0.81), Crédit Mutuel (0.86), BNP Paribas (0.64), et dans une moindre mesure par quelques nouveaux venus : Oney (1.26) et Hello Bank (1.29). En revanche, les banques plus récentes ou les banques en ligne ont tendance à obtenir des scores beaucoup plus élevés : Orange Bank (2.30), Boursorama Banque (2.15), Monabank (2.23), Ma French Bank (2.32), Floabank (2.05) etc. Les scores les plus élevés ont été obtenus par des entreprises offrant des services bancaires spécialisés pour les professionnels (Shine (2.69) et Anytime (2.47)), des cartes de crédit pour adolescents (Kard (2.73) et Pix Pay (2.81)), ou axées sur les prêts à la consommation (Immoprêt (2.78) et Cofidis (2.80)). Si nous devions poursuivre ce travail, nous créerions des catégories plus granulaires, y compris pour la valeur (prêts, frais, taux d'intérêt), nous utiliserions des modèles de langage plus performants (peut-être Camembert) pour inférer l'étiquetage par similarité sémantique, ou, alternativement, nous inférerions les étiquettes en utilisant des prompts de few-shot avec un modèle de langage ouvert et de grande taille, comme Mixtral 8x22b, ce qui nécessiterait encore une évaluation en utilisant des données étiquetées à la main comme nous l'avons fait.")
 
 if page == pages[4] :
 
@@ -294,6 +284,8 @@ if page == pages[4] :
   - Regroupement de sujets variés (frais, taux d'intérêt, prêts) sous les étiquettes good_value et bad_value.
   - **Suggestion rétrospective** : Garder des étiquettes séparées pour ces différents sujets aurait pu donner des scores de précision individuellement plus élevés.
 """)
+    st.write("###   Classification sur l'ensemble des avis")
+    st.write("Nous avons effectué l'étiquetage sur l'ensemble du jeu de données (105000 avis) et nous avons veillé à retirer l'étiquetage des avis où deux étiquettes opposées existaient, pour ne tenir compte que des opinions clairement tranchées. Sur la page suivante, vous trouverez la représentation des entreprises bancaires ayant plus de mille avis.")
 
 if page == pages[5]:
     st.write("### Prédiction")
