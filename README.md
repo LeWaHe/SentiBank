@@ -3,10 +3,10 @@ SentiBank
 This repo is a fork from a Data Science training project @ DataScientest / La Sorbonne university.
 
 Team:
-Leonardo Heyerdahl (lead)
-Alexis Garatti
-Huazhen Hou
-Alexandre PRZYBYLSKI
+- Leonardo Heyerdahl (lead)
+- Alexis Garatti
+- Huazhen Hou
+- Alexandre PRZYBYLSKI
 
 Objectives:
 - Collect banking reviews 
