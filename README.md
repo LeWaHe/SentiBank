@@ -1,45 +1,29 @@
-Project Name
+SentiBank
 ==============================
+This repo is a fork from a Data Science training project @ DataScientest / La Sorbonne university.
 
-This repo is a Starting Pack for DS projects. You can rearrange the structure to make it fits your project.
+Team:
+Leonardo Heyerdahl (lead)
+Alexis Garatti
+Huazhen Hou
+Alexandre PRZYBYLSKI
 
-Project Organization
-------------
+Objectives:
+- Collect banking reviews 
+- Predict stars using review texts and meta data
+- Characterize user opinions regarding banking services
 
-    ├── LICENSE
-    ├── README.md          <- The top-level README for developers using this project.
-    ├── data               <- Should be in your computer but not on Github (only in .gitignore)
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's name, and a short `-` delimited description, e.g.
-    │                         `1.0-alban-data-exploration`.
-    │
-    ├── references         <- Data dictionaries, manuals, links, and all other explanatory materials.
-    │
-    ├── reports            <- The reports that you'll make during this project as PDF
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
-    │
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   ├── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │   │   └── visualize.py
-
---------
-
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+Results:
+- We collected 170k banking reviews in French from Truspilot
+- We evaluated the performance of classic ML models (KNN, lr, Random Forests, XGBoost) and one Transformer based model (CAMEMBERT), which outperformed (f1 = .64)
+- We created a 3 axis dichotomic taxonomy to characterize user opinions about banks:
+    - Communication Good/Bad
+    - Value Good / Bad
+    - Efficacy Good / Bad
+- We hand labelled 200 reviews using these 6 labels
+- We evaluated different strategies for automatic labelling using
+    - Different granularities (sentence based review, whole review, sentence based label references,..)
+    - CamemBERT infered sentiment filtering
+    - All words vs tailored stop words filtering
+- Our semantic labeler performed between .54 and .80 on test results.
+- We labelled the whole data set and produced global notations on the 3 axis for all banking actors in France
